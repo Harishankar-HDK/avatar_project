@@ -1,42 +1,48 @@
-import threading
-from stt2 import recognize_speech
-from tts1 import text_to_speech
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import pygame
+from stt import get_user_input
+from nlp import generate_response
+from tts import text_to_speech_and_lip_sync
 
-# Load fine-tuned model
-model_name = "C:/Users/user/Desktop/Ai_avatar_project/fine_tuned_model"  # Path to your fine-tuned model
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+# Initialize Pygame
+pygame.init()
 
-# Generate AI response
-def generate_response(prompt):
-    inputs = tokenizer(prompt, return_tensors="pt")
-    outputs = model.generate(inputs["input_ids"], max_length=200)
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return response
+# Screen dimensions
+SCREEN_WIDTH = 800  # Increased screen width
+SCREEN_HEIGHT = 600  # Increased screen height
 
-# Play response in a separate thread
-def play_response(response):
-    text_to_speech(response)
+# Create Pygame window
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("AI Avatar")
 
-def main():
-    print("AI Companion is ready! Say something or type 'exit' to quit.")
+# Load avatar and mouth images
+from utils import load_mouth_images, idle_animation
+mouth_images = load_mouth_images()
 
-    while True:
-        print("\nListening...")
-        user_input = recognize_speech()
+# Center the mouth dynamically based on image size
+mouth_position = (
+    (SCREEN_WIDTH - mouth_images["rest"].get_width()) // 2,
+    (SCREEN_HEIGHT - mouth_images["rest"].get_height()) // 2,
+)
 
-        if user_input:
-            if user_input.lower() == "exit":
-                print("Goodbye!")
-                break
+# Main loop
+running = True
+while running:
+    screen.fill((255, 255, 255))  # White background
+    idle_animation(screen, mouth_images["rest"], mouth_position)
 
-            # Generate response
-            response = generate_response(user_input)
-            print(f"AI Response: {response}")
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            # Spacebar to trigger interaction
+            user_input = get_user_input()
+            print("User said:", user_input)
 
-            # Speak the response
-            threading.Thread(target=play_response, args=(response,)).start()
+            # Generate AI response
+            response_text = generate_response(user_input)
+            print("AI Response:", response_text)
 
-if __name__ == "__main__":
-    main()
+            # Text-to-speech and continuous lip-sync
+            text_to_speech_and_lip_sync(response_text, screen, mouth_images, mouth_position)
+
+pygame.quit()
