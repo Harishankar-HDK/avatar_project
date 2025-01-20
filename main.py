@@ -38,9 +38,15 @@ while running:
             user_input = get_user_input()
             print("User said:", user_input)
 
+            # Check for exit command
+            if user_input.lower() in ["exit", "quit"]:
+                print("Exiting application...")
+                running = False
+                break  # Exit the event loop
+
             # Generate AI response
             response_text = generate_response(user_input)
-            print("AI Response:", response_text)
+            print("AI Response: ", response_text)
 
             # Text-to-speech and continuous lip-sync
             text_to_speech_and_lip_sync(response_text, screen, mouth_images, mouth_position)
