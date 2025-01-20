@@ -1,16 +1,11 @@
-import pyttsx3
 import threading
 import time
 import pygame
+from gtts import gTTS
+import os
 
-# Initialize Text-to-Speech Engine
-engine = pyttsx3.init()
-
-# Adjust Text-to-Speech Settings
-rate = engine.getProperty('rate')
-engine.setProperty('rate', rate - 50)
-voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[0].id)
+# Initialize pygame mixer for audio playback
+pygame.mixer.init()
 
 def text_to_speech_and_lip_sync(response_text, screen, mouth_images, mouth_position):
     stop_event = threading.Event()
@@ -26,13 +21,40 @@ def text_to_speech_and_lip_sync(response_text, screen, mouth_images, mouth_posit
                 pygame.display.flip()
                 time.sleep(duration)
 
+    # Start the animation thread
     animation_thread = threading.Thread(target=continuous_lip_sync)
     animation_thread.start()
 
-    # Text-to-speech
-    engine.say(response_text)
-    engine.runAndWait()
+    # Convert text to speech and save to file
+    tts = gTTS(text=response_text, lang='en')
+    audio_file = "response.mp3"
+    tts.save(audio_file)
 
-    # Stop animation
-    stop_event.set()
-    animation_thread.join()
+    try:
+        # Load and play the audio using pygame.mixer
+        pygame.mixer.music.load(audio_file)
+        pygame.mixer.music.play()
+
+        # Wait for the audio to finish playing
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+
+        # Stop and unload the music to release the file
+        pygame.mixer.music.stop()
+        pygame.mixer.music.unload()
+
+    except pygame.error as e:
+        print(f"Error playing sound: {e}")
+
+    finally:
+        # Stop the animation
+        stop_event.set()
+        animation_thread.join()
+
+        # Cleanup: Remove the audio file after playback
+        if os.path.exists(audio_file):
+            try:
+                os.remove(audio_file)
+            except PermissionError:
+                print(f"Unable to delete {audio_file}. It may still be in use.")
+
