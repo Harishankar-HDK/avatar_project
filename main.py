@@ -1,54 +1,21 @@
-import pygame
-from stt import get_user_input
-from nlp import generate_response
-from tts import text_to_speech_and_lip_sync
+# main.py
+from stt2 import get_user_input
+from tts3 import text_to_speech
+from model1 import get_model_response
 
-# Initialize Pygame
-pygame.init()
+# Main loop for conversation
+def main():
+    while True:
+        # Step 1: Get user input through speech-to-text
+        user_input = get_user_input()
+        
+        if user_input:
+            # Step 2: Get AI model response
+            response = get_model_response(user_input)
+            print("AI Response:", response)
+            
+            # Step 3: Convert AI response to speech
+            text_to_speech(response)
 
-# Screen dimensions
-SCREEN_WIDTH = 800  # Increased screen width
-SCREEN_HEIGHT = 600  # Increased screen height
-
-# Create Pygame window
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("AI Avatar")
-
-# Load avatar and mouth images
-from utils import load_mouth_images, idle_animation
-mouth_images = load_mouth_images()
-
-# Center the mouth dynamically based on image size
-mouth_position = (
-    (SCREEN_WIDTH - mouth_images["rest"].get_width()) // 2,
-    (SCREEN_HEIGHT - mouth_images["rest"].get_height()) // 2,
-)
-
-# Main loop
-running = True
-while running:
-    screen.fill((255, 255, 255))  # White background
-    idle_animation(screen, mouth_images["rest"], mouth_position)
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            # Spacebar to trigger interaction
-            user_input = get_user_input()
-            print("User said:", user_input)
-
-            # Check for exit command
-            if user_input.lower() in ["exit", "quit"]:
-                print("Exiting application...")
-                running = False
-                break  # Exit the event loop
-
-            # Generate AI response
-            response_text = generate_response(user_input)
-            print("AI Response: ", response_text)
-
-            # Text-to-speech and continuous lip-sync
-            text_to_speech_and_lip_sync(response_text, screen, mouth_images, mouth_position)
-
-pygame.quit()
+if __name__ == "__main__":
+    main()
