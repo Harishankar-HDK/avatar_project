@@ -1,19 +1,21 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import re
 
-# Load Hugging Face Conversational Model
-model_name = "microsoft/DialoGPT-medium"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+def clean_model_output(text):
+    # Remove asterisks and unwanted symbols
+    text = re.sub(r'\*+', '', text)  # Removes all asterisks
+    text = re.sub(r'[^a-zA-Z0-9\s.,!?-]', '', text)  # Removes any other non-alphanumeric characters except common punctuation
+    
+    # Optionally, you can handle any other unwanted symbols specifically
+    # e.g., removing strange characters like "@" or extra spaces
+    text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with a single space
+    
+    # Strip leading or trailing spaces
+    text = text.strip()
+    
+    return text
 
-def generate_response(user_input):
-    inputs = tokenizer.encode(user_input + tokenizer.eos_token, return_tensors="pt")
-    response_ids = model.generate(
-        inputs,
-        max_length=100,
-        pad_token_id=tokenizer.eos_token_id,
-        no_repeat_ngram_size=2,  # Prevent repeating input
-        do_sample=True,          # Add variability to response
-        temperature=0.7          # Adjust creativity of response
-    )
-    response_text = tokenizer.decode(response_ids[0], skip_special_tokens=True)
-    return response_text
+# Example model output with unwanted symbols
+model_output = "Hello! I am your *assistant* here to help you with ***your query!***"
+
+cleaned_output = clean_model_output(model_output)
+print(cleaned_output)
