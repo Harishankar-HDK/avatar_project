@@ -1,7 +1,7 @@
-# main.py
-from stt2 import get_user_input
-from tts3 import text_to_speech
-from model1 import get_model_response
+from stt1 import get_user_input
+from tts1 import text_to_speech
+from model import get_model_response
+from preprocessing import clean_model_output
 
 # Main loop for conversation
 def main():
@@ -12,10 +12,11 @@ def main():
         if user_input:
             # Step 2: Get AI model response
             response = get_model_response(user_input)
-            print("AI Response:", response)
+
+            clean_response=clean_model_output(response)
+            print("AI Response:", clean_response)
+            text_to_speech(clean_response)
             
-            # Step 3: Convert AI response to speech
-            text_to_speech(response)
 
 if __name__ == "__main__":
     main()
