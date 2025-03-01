@@ -8,6 +8,9 @@ def clean_model_output(text):
     # Collapse multiple spaces into a single space
     text = re.sub(r'\s+', ' ', text)
     # Remove leading/trailing spaces
+
+    text = text.replace('.', ',')
+    
     text = text.strip()
     
     return text
