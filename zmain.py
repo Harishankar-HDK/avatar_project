@@ -1,7 +1,7 @@
 from zstt import get_user_input
-from ztts1 import text_to_speech, stop_audio
-from zmodel import get_model_response
-from zpreprocessing import clean_model_output
+from ztts import text_to_speech, stop_audio
+from model import get_model_response
+from preprocessing import clean_model_output
 import threading
 import sys  # Import sys for forceful exit
 
